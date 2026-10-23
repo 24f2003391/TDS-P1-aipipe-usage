@@ -12,13 +12,12 @@ jq -e '.days | type == "array"' "$RAW" >/dev/null
 CSV="logs/daily.csv"
 HEADER="date,spend_usd,iitm_users,all_domain_users,users_1_provider,users_2_providers,users_3plus_providers,input_tokens,output_tokens,spend_per_all_domain_user_usd,fetched_at"
 
-# Initialise the expanded schema if this is a new repository.
 if [ ! -f "$CSV" ]; then
   echo "$HEADER" > "$CSV"
 fi
 
-# Only archive complete, available days. The provider-count buckets are
-# all-domain distinct users; their sum is the all-domain user count.
+# Archive completed days only. @tsv avoids CSV quote handling because
+# these selected fields contain no tabs/newlines; the date is the row key.
 jq -r --arg ts "$TS" '
   .days[]
   | select(.complete == true and .available == true and .total != null)
@@ -37,14 +36,15 @@ jq -r --arg ts "$TS" '
       $u3,
       $d.total.input_tokens,
       $d.total.output_tokens,
-      (if $all > 0 then (($d.total.spend_usd / $all) * 100000000 | round) / 100000000 else 0 end),
+      (if $all > 0 then ($d.total.spend_usd / $all) else "NA" end),
       $ts
-    ] | @csv
-' "$RAW" | while IFS= read -r row; do
-  day="${row%%,*}"
-  # Each date is archived once. Keep the original fetch timestamp for
-  # provenance; raw snapshots preserve subsequent feed revisions.
-  if ! awk -F, -v d="$day" 'NR > 1 && $1 == d { found=1 } END { exit !found }' "$CSV"; then
-    echo "$row" >> "$CSV"
+    ] | @tsv
+' "$RAW" | while IFS=$'\t' read -r date spend iitm all u1 u2 u3 input output per_user fetched; do
+  # One row per completed UTC date. Keep the first observed completed value;
+  # later snapshots remain in logs/raw/ for checking revisions.
+  if ! awk -F, -v d="$date" 'NR > 1 && $1 == d { found=1 } END { exit !found }' "$CSV"; then
+    printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' \
+      "$date" "$spend" "$iitm" "$all" "$u1" "$u2" "$u3" \
+      "$input" "$output" "$per_user" "$fetched" >> "$CSV"
   fi
 done
