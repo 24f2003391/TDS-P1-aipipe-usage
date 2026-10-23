@@ -48,9 +48,10 @@ jq -r --arg ts "$TS" '
       ($d.total.input_tokens - ($o.input_tokens // 0) - ($g.input_tokens // 0)),
       ($d.total.output_tokens - ($o.output_tokens // 0) - ($g.output_tokens // 0)),
       $ts
-    ] | @tsv
-' "$RAW" | while IFS=$'\t' read -r date spend iitm all u1 u2 u3 input output per_user ospend gspend xspend oin oout gin gout xin xout fetched; do
-  # One row per completed UTC date. Later snapshots remain in logs/raw/.
+    ] | map(tostring) | join("|")
+' "$RAW" | while IFS='|' read -r date spend iitm all u1 u2 u3 input output per_user ospend gspend xspend oin oout gin gout xin xout fetched; do
+  # A non-whitespace delimiter preserves empty fields if a provider is absent.
+  # One row per completed UTC date; later snapshots remain in logs/raw/.
   if ! awk -F, -v d="$date" 'NR > 1 && $1 == d { found=1 } END { exit !found }' "$CSV"; then
     printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' \
       "$date" "$spend" "$iitm" "$all" "$u1" "$u2" "$u3" "$input" "$output" \
