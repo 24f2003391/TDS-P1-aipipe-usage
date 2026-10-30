@@ -53,3 +53,32 @@ In the snapshot fetched at `20261023T044324Z`, the completed 2026-10-22 row repo
 - OpenAI spend: **$11.00722815**; Gemini spend: **$0**
 
 The $11.01 total is across all included domains. The public feed does not break out spend specifically attributable to the 70 IITM-filtered users. This spike alone cannot establish a cause.
+
+
+## Dashboard
+
+The repository includes a static, public analytics dashboard at the repository root:
+
+- `index.html`: responsive AI Pipe Analytics Terminal.
+- `.github/workflows/deploy-pages.yml`: builds a small Pages artifact containing the dashboard and `logs/daily.csv`, then deploys it to GitHub Pages.
+- The dashboard reads `./logs/daily.csv` at runtime. It does not require a server, database, API key, or private usage access.
+
+### Publish with GitHub Pages
+
+1. Open **Settings → Pages** in this repository.
+2. Under **Build and deployment → Source**, select **GitHub Actions**.
+3. Open **Actions → Deploy AI Pipe Analytics Terminal** and run the workflow once with **Run workflow**, or push a change to `index.html`.
+4. After the deployment job succeeds, the site is available at:
+
+   https://24f2003391.github.io/TDS-P1-aipipe-usage/
+
+The deploy workflow also runs when `logs/daily.csv` changes, so new completed daily records are published after the existing collection workflow commits them. The existing six-hour collection workflow is unchanged.
+
+### Dashboard interpretation
+
+- Spend and provider totals are all-domain public-feed aggregates, not IITM-only spend.
+- IITM-filtered users and all-domain counted users are shown as separate measures.
+- User figures are daily distinct-user counts, not request counts.
+- Charts use completed daily records only; the latest partial day is excluded by the collector.
+- The dashboard's CSV export contains the filtered historical rows.
+- The browser loads Chart.js from jsDelivr for charts. The underlying CSV remains available directly in the repository.
