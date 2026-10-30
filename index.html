@@ -77,7 +77,7 @@ function ratio(a,b){return b>0?a/b:NaN}
 function change(cur,prev){return prev>0?(cur-prev)/prev*100:NaN}
 function active(){return selectedDays===0?rows:rows.slice(-selectedDays)}
 function sum(a,k){return a.reduce(function(t,r){return t+r[k]},0)}
-function stddev(a){if(!a.length)return NaN;var m=a.reduce(function(t,x){return t+x,0},0)/a.length;return Math.sqrt(a.reduce(function(t,x){return t+Math.pow(x-m,2)},0)/a.length)}
+function stddev(a){if(!a.length)return NaN;var m=a.reduce(function(t,x){return t+x},0)/a.length;return Math.sqrt(a.reduce(function(t,x){return t+Math.pow(x-m,2)},0)/a.length)}
 function colorChange(id,v){var e=$(id);if(!e)return;e.textContent=pct(v);e.className="kvalue "+(Number.isFinite(v)?(v>0?"positive":v<0?"negative":"neutral"):"neutral")}
 function makeChart(id,type,data,options){if(charts[id])charts[id].destroy();var ctx=$(id);if(!ctx)return;charts[id]=new Chart(ctx,{type:type,data:data,options:Object.assign({responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{display:true,labels:{color:"#91a0b1",boxWidth:8,boxHeight:8,font:{family:"DM Mono",size:10}}},tooltip:{backgroundColor:"#101923",borderColor:"#2a3948",borderWidth:1,titleColor:"#e8eef5",bodyColor:"#b9c7d5",padding:10}},scales:type==="doughnut"?{}:{x:{grid:{display:false},ticks:{color:"#78899b",font:{family:"DM Mono",size:9},maxRotation:0,autoSkip:true},border:{color:"#263340"}},y:{grid:{color:"rgba(120,140,160,.12)"},ticks:{color:"#78899b",font:{family:"DM Mono",size:9}},border:{display:false}}}},options||{})})}
 function line(id,labels,datasets){makeChart(id,"line",{labels:labels,datasets:datasets.map(function(d){return Object.assign({tension:.32,pointRadius:2,pointHoverRadius:5,borderWidth:2,fill:false},d)})})}
