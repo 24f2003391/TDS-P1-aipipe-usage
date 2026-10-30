@@ -82,3 +82,48 @@ The deploy workflow also runs when `logs/daily.csv` changes, so new completed da
 - Charts use completed daily records only; the latest partial day is excluded by the collector.
 - The dashboard's CSV export contains the filtered historical rows.
 - The browser loads Chart.js from jsDelivr for charts. The underlying CSV remains available directly in the repository.
+
+
+## Analytics metric definitions
+
+The dashboard provides **7D**, **14D**, and **ALL** date ranges, plus an independent **3D / 7D rolling-window** selector. The 30D option is intentionally omitted.
+
+### Headline and period metrics
+
+- **Tracked spend**: sum of `spend_usd` over the selected date range; this is all-domain spend.
+- **Latest IITM-filtered users** and **latest all-domain users**: the respective daily counts on the latest archived date.
+- **Input + output tokens**: sum of both token columns over the selected date range.
+- **Spend per daily user**: selected-period spend divided by the sum of daily all-domain user counts.
+- **Tokens per daily user**: selected-period tokens divided by the sum of daily all-domain user counts.
+
+The per-daily-user period ratios are not per-person lifetime averages: a person active on multiple days can be counted on multiple days.
+
+### Rolling-window metrics
+
+The rolling selector supports 3 or 7 most recent archived daily records:
+
+- Rolling spend and rolling token volume are sums.
+- Average daily spend is rolling spend divided by the number of available records.
+- Average daily users is the arithmetic mean of daily all-domain user counts.
+- Rolling spend per daily user and rolling tokens per daily user divide the rolling totals by the sum of daily user counts.
+- Rolling output/input is total output tokens divided by total input tokens.
+
+If fewer records than the selected window exist, the dashboard labels the window as partial and reports the number of available records. Rolling windows operate on archived daily records; check the dates in the explorer if the archive contains gaps.
+
+### Momentum and volatility
+
+- Daily spend, token, and user growth compare the latest archived day with the preceding archived day.
+- Seven-day spend change compares the latest seven archived records with the preceding seven archived records. It is shown as unavailable until both full seven-record periods exist.
+- Spend volatility is the population standard deviation of daily spend over the selected rolling window.
+- Spend acceleration is the difference between the latest daily spend growth rate and the previous day's spend growth rate.
+- A comparison with a zero or unavailable denominator is shown as `N/A`.
+
+### Provider metrics
+
+Provider spend and token shares are calculated from the selected date range. Provider cost per 1,000 tokens is observed aggregate spend divided by observed provider tokens, multiplied by 1,000. Tokens per dollar is observed provider tokens divided by observed provider spend. These are descriptive ratios, not published provider prices or guaranteed model-level costs. Provider input/output is total provider input tokens divided by total provider output tokens.
+
+### User composition and source limitations
+
+The dashboard shows the latest daily counts for users using one, two, or three-or-more providers, along with the multi-provider share and IITM-filtered share of all-domain users. These are daily counts, not unique users across a multi-day period.
+
+The public CSV does not contain individual user IDs or individual email-domain breakdowns. Consequently, the dashboard does not claim per-ID usage, per-email-domain usage, or per-domain spend. The IITM-filtered count is the only separate IITM-related user measure supplied by this dataset.
